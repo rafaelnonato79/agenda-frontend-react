@@ -2,65 +2,60 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import { Contato } from "../../models/contato";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
     onAddContato: (contato: Contato) => void;
 }
 
-const ContatoForm: React.FC<Props> = ({ onAddContato }) => {
+const ContatoEdit: React.FC<Props> = ({ onAddContato }) => {
 
-    const [nome, setNome] = useState('');
-    const [email, setEmail] = useState('');
-    const [numeroFone, setNumeroFone] = useState('');
-    const [tipoFone, setTipoFone] = useState('');
-    const [logradouro, setLogradouro] = useState('');
-    const [numeroEndereco, setNumeroEndereco] = useState('');
 
-    const handleSubmit = async (evento: React.FormEvent) => {
-        evento.preventDefault();
-        const newContato = {
-            nome: nome,
-            email: email,
-            fone: {
-                numero: numeroFone,
-                tipoFone: tipoFone
-            },
-            endereco: {
-                logradouro: logradouro,
-                numero: numeroEndereco,
-                bairro: '',
-                cidade: '',
-                estado: '',
-                cep: ''
-            }
+    const navigate = useNavigate()
+
+    const {id} = useParams<{id: string}>();
+    const [contato, setContato] = useState<Contato | null>(null);
+
+
+    useEffect(()=>{
+        const fetchContato = async()=>{
+            const response = await axios.get(`http://localhost:8080/contatos/${id}`);
+            setContato(response.data);
         };
+        fetchContato();
+    },[id]);
+
+    
+    const handleSubmit = async (evento: React.FormEvent) => {
+        evento.preventDefault()
         
         try {
-            const resposta = await axios.post('http://localhost:8080/contatos', newContato);
-            onAddContato(resposta.data);
-
-            // Limpa os campos do formulário
-            setNome('');
-            setEmail('');
-            setNumeroFone('');
-            setTipoFone('');
-            setLogradouro('');
-            setNumeroEndereco('');
+            const resposta = await axios.put('http://localhost:8080/contatos', contato);
+            navigate('/contatos');
         } catch (error) {
             console.error('Houve um erro ao salvar o contato:', error);
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const {name, value} = e.target;
+        setContato({
+            ...contato, [name]: value
+        }as Contato);
+    }
+
+
+
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleChange}>
             <div className="form-group mb-3">
                 <label htmlFor="nome">Nome</label>
                 <input
                     type="text"
                     className="form-control"
                     id="nome"
-                    value={nome}
-                    onChange={(evento) => setNome(evento.target.value)}
+                    value={contato?.nome}
+                    onChange={handleChange}
                 />
             </div>
             <div className="form-group mb-3">
@@ -69,8 +64,8 @@ const ContatoForm: React.FC<Props> = ({ onAddContato }) => {
                     type="email"
                     className="form-control"
                     id="email"
-                    value={email}
-                    onChange={(evento) => setEmail(evento.target.value)}
+                    value={contato?.email}
+                    onChange={(evento) => setEmail(evento.target.value)}    
                 />
             </div>
             <div className="form-group mb-3">

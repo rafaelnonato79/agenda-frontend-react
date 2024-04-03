@@ -44,6 +44,7 @@ const ContatosList: React.FC = () => {
                 Nome: {contato.nome}<br/>
                 Fone: {contato.fone.numero} <br/>
                 Tipo: {contato.fone.tipoFone}
+                <Link to={`/contatos/${contato.id}`} className ='btn btn-primary'>
               </p>
               <div>{contato.endereco.logradouro}</div>
             </div>
